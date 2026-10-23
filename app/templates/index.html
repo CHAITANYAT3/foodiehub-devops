@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FoodieHub - Online Food Ordering</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+        h1 { color: #d35400; }
+        .food {
+            background: white;
+            margin: 12px 0;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        button {
+            background: #d35400;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        #message { margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <h1>FoodieHub</h1>
+    <p>Online Food Ordering System</p>
+
+    <h2>Our Menu</h2>
+    <div id="menu">Loading menu...</div>
+    <p id="message"></p>
+
+    <script>
+        async function loadMenu() {
+            const response = await fetch("/api/menu");
+            const foods = await response.json();
+            const menuDiv = document.getElementById("menu");
+
+            menuDiv.innerHTML = "";
+
+            foods.forEach(food => {
+                const item = document.createElement("div");
+                item.className = "food";
+
+                const title = document.createElement("h3");
+                title.textContent = food.name;
+
+                const price = document.createElement("p");
+                price.textContent = "Price: ₹" + food.price;
+
+                const button = document.createElement("button");
+                button.textContent = "Order Now";
+                button.onclick = () => placeOrder(food.id);
+
+                item.append(title, price, button);
+                menuDiv.appendChild(item);
+            });
+        }
+
+        async function placeOrder(foodId) {
+            const response = await fetch("/api/orders", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({items: [foodId]})
+            });
+
+            const result = await response.json();
+
+            document.getElementById("message").textContent =
+                response.ok
+                    ? "Order placed successfully! Order ID: " + result.id
+                    : "Could not place order.";
+        }
+
+        loadMenu();
+    </script>
+</body>
+</html>
